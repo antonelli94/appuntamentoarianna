@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DateBloom — Un invito speciale 💌</title>
+  
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"Space Mono"', 'monospace'],
+          },
+          colors: {
+            raspberry: {
+              50: '#fff1f3',
+              100: '#ffe4e7',
+              200: '#fecd54',
+              500: '#f43f5e',
+              600: '#e11d48',
+              700: '#be123c',
+              800: '#9f1239',
+            }
+          },
+          animation: {
+            'heart-beat': 'heartBeat 1.8s ease-in-out infinite',
+            'float-slow': 'floating 3s ease-in-out infinite',
+            'car-bounce': 'carBounce 1.4s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            heartBeat: {
+              '0%, 100%': { transform: 'scale(1)' },
+              '14%': { transform: 'scale(1.22)' },
+              '28%': { transform: 'scale(1)' },
+              '42%': { transform: 'scale(1.18)' },
+              '70%': { transform: 'scale(1)' },
+            },
+            floating: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-6px)' },
+            },
+            carBounce: {
+              '0%': { transform: 'translateY(0) rotate(0deg)' },
+              '100%': { transform: 'translateY(-4px) rotate(1.5deg)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Canvas Confetti via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Gradienti morbidi di sfondo e animazioni fluide */
+    body {
+      background-color: #fbf7f4;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(254, 226, 226, 0.6) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(253, 230, 138, 0.3) 0px, transparent 50%),
+        radial-gradient(at 100% 20%, rgba(255, 228, 230, 0.7) 0px, transparent 40%);
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Ricevuta stile scontrino */
+    .receipt-edge {
+      background-image: radial-gradient(circle, transparent, transparent 50%, #ffffff 50%, #ffffff 100%);
+      background-size: 14px 14px;
+    }
+
+    /* Effetto glassmorphism */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-stone-800 flex flex-col justify-center items-center p-4 sm:p-6 min-h-screen relative overflow-x-hidden selection:bg-rose-100 selection:text-rose-700">
+
+  <!-- Bolle decorative sullo sfondo -->
+  <div class="fixed top-12 left-10 w-48 h-48 bg-rose-200/40 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="fixed bottom-12 right-10 w-64 h-64 bg-amber-100/50 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- Container Principale -->
+  <main class="w-full max-w-md mx-auto my-auto relative z-10">
+    
+    <!-- Card Principale DateBloom -->
+    <div class="glass-card border border-rose-100/80 rounded-3xl shadow-xl shadow-rose-900/5 overflow-hidden transition-all duration-300 relative">
+      
+      <!-- Top Header con Logo e Progresso -->
+      <header class="px-6 pt-6 pb-4 flex items-center justify-between border-b border-rose-50 bg-white/60">
+        <!-- Logo Brand -->
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-rose-600 to-rose-400 flex items-center justify-center shadow-md shadow-rose-500/20">
+            <span class="text-white text-base animate-heart-beat">❤️</span>
+          </div>
+          <div>
+            <h1 class="text-base font-bold tracking-tight text-stone-800 leading-none">DateBloom</h1>
+            <span class="text-[10px] uppercase font-semibold tracking-wider text-rose-500">Official Invite</span>
+          </div>
+        </div>
+
+        <!-- Indicatore Passaggio -->
+        <div class="flex flex-col items-end gap-1.5">
+          <span id="step-counter" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100">
+            Passo 1 / 7
+          </span>
+          <div class="w-20 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+            <div id="step-progress-bar" class="h-full bg-gradient-to-r from-rose-500 to-rose-600 w-[14.28%] transition-all duration-500 rounded-full"></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Corpo del modulo a passaggi -->
+      <div class="p-6 sm:p-7 min-h-[390px] flex flex-col justify-between" id="steps-container">
+
+        <!-- =================== STEP 1: LA PROPOSTA =================== -->
+        <section id="step-1" class="step-pane flex-1 flex flex-col justify-between">
+          <div>
+            <span class="inline-block text-[11px] font-bold tracking-widest uppercase text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md mb-3">
+              DOMANDA MOLTO IMPORTANTE
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight leading-tight mb-2">
+              Verresti a un appuntamento con me?
+            </h2>
+            <p class="text-stone-500 text-sm leading-relaxed">
+              Sii onesta. C'è solo una risposta giusta, ovviamente.
+            </p>
+          </div>
+
+          <!-- Area interattiva bottoni col tasto NO fuggitivo -->
+          <div class="my-6">
+            <div id="playground-area" class="relative h-44 w-full bg-rose-50/40 border border-rose-100/70 rounded-2xl p-3 overflow-hidden flex items-center justify-center">
+              
+              <!-- Tasto SÌ Primario -->
+              <button 
+                id="btn-yes" 
+                onclick="goToStep(2)"
+                class="px-8 py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-base rounded-2xl shadow-lg shadow-rose-600/30 transition-all duration-200 z-10 flex items-center gap-2 group">
+                <span>SÌ, volentieri</span>
+                <span class="transition-transform group-hover:scale-125">✨</span>
+              </button>
+
+              <!-- Tasto NO Timido / Fuggitivo -->
+              <button 
+                id="btn-no" 
+                class="absolute px-5 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-600 font-medium text-xs sm:text-sm rounded-xl transition-all duration-200 cursor-pointer shadow-sm select-none"
+                style="top: 20px; right: 20px;">
+                NO 🙈
+              </button>
+            </div>
+            
+            <p class="text-center text-xs text-stone-400 mt-2 italic flex items-center justify-center gap-1">
+              <span>🤫</span> psst... il tasto NO è un po' timido
+            </p>
+          </div>
+
+          <div></div>
+        </section>
+
+        <!-- =================== STEP 2: REAZIONE AL SÌ =================== -->
+        <section id="step-2" class="step-pane hidden flex-1 flex flex-col justify-between text-center">
+          <div class="my-auto py-4">
+            <div class="inline-flex p-4 rounded-3xl bg-rose-100/70 text-5xl mb-4 animate-float-slow">
+              🥹💖
+            </div>
+            <h2 class="text-2xl font-extrabold text-stone-900 tracking-tight mb-2">
+              ASPETTA, HAI DETTO DAVVERO DI SÌ?? 😭
+            </h2>
+            <p class="text-stone-600 text-sm max-w-xs mx-auto leading-relaxed">
+              Ero già prontissimo a ricevere un due di picche e invece eccoci qua!
+            </p>
+          </div>
+
+          <div class="pt-4">
+            <button 
+              onclick="goToStep(3)" 
+              class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold rounded-2xl shadow-lg shadow-rose-600/25 transition-all flex items-center justify-center gap-2">
+              <span>Ok, organizziamo subito</span>
+              <span class="text-lg">➔</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- =================== STEP 3: DATA E ORARIO =================== -->
+        <section id="step-3" class="step-pane hidden flex-1 flex flex-col justify-between">
+          <div>
+            <span class="inline-block text-[11px] font-bold tracking-widest uppercase text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md mb-2">
+              SALVA IL MOMENTO
+            </span>
+            <h2 class="text-2xl font-extrabold text-stone-900 tracking-tight mb-1">
+              Allora... quando saresti libera?
+            </h2>
+            <p class="text-stone-500 text-sm mb-6">
+              Scegli un giorno e un orario perfetti.
+            </p>
+
+            <div class="space-y-4">
+              <!-- Scelta Data -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5" for="date-input">
+                  📅 Seleziona una Data
+                </label>
+                <input 
+                  type="date" 
+                  id="date-input" 
+                  class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all text-sm"
+                />
+              </div>
+
+              <!-- Scelta Orario -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5" for="time-select">
+                  ⏰ A che ora ci vediamo?
+                </label>
+                <select 
+                  id="time-select" 
+                  class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all text-sm cursor-pointer">
+                  <option value="20:30">20:30 (Classico perfetto)</option>
+                  <option value="19:30">19:30 (Aperitivo lungo)</option>
+                  <option value="21:30">21:30 (Seratina rilassata)</option>
+                  <option value="Quando vuoi tu, mi adatto">Quando vuoi tu, mi adatto ✨</option>
+                </select>
+              </div>
+
+              <div id="step-3-warning" class="hidden text-xs text-rose-600 font-medium bg-rose-50 p-2.5 rounded-lg border border-rose-100 text-center">
+                Scegli almeno una data valida per proseguire 😉
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-6">
+            <button 
+              onclick="validateAndGoToStep(4)" 
+              class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold rounded-2xl shadow-lg shadow-rose-600/25 transition-all flex items-center justify-center gap-2">
+              <span>Avanti: parliamo di cibo</span>
+              <span class="text-lg">➔</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- =================== STEP 4: COSA SI MANGIA =================== -->
+        <section id="step-4" class="step-pane hidden flex-1 flex flex-col justify-between">
+          <div>
+            <span class="inline-block text-[11px] font-bold tracking-widest uppercase text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md mb-2">
+              RICERCA PERFETTA
+            </span>
+            <h2 class="text-2xl font-extrabold text-stone-900 tracking-tight mb-1">
+              Cosa ci andrebbe di mangiare? 🍽️
+            </h2>
+            <p class="text-stone-500 text-sm mb-4">
+              Scegli il mood gastronomico della serata.
+            </p>
+
+            <!-- Griglia opzioni Cibo -->
+            <div class="grid grid-cols-2 gap-2.5" id="food-options-grid">
+              <button type="button" onclick="selectFood('Pizza 🍕')" class="food-btn active p-3 rounded-2xl border-2 border-rose-500 bg-rose-50/70 text-left transition-all flex items-center justify-between">
+                <span class="text-sm font-bold text-stone-800">Pizza 🍕</span>
+                <span class="check-mark text-rose-600 text-xs font-bold">✓</span>
+              </button>
+
+              <button type="button" onclick="selectFood('Sushi 🍣')" class="food-btn p-3 rounded-2xl border-2 border-stone-200 bg-stone-50/50 text-left transition-all flex items-center justify-between hover:border-rose-200">
+                <span class="text-sm font-bold text-stone-800">Sushi 🍣</span>
+                <span class="check-mark hidden text-rose-600 text-xs font-bold">✓</span>
+              </button>
+
+              <button type="button" onclick="selectFood('Hamburger 🍔')" class="food-btn p-3 rounded-2xl border-2 border-stone-200 bg-stone-50/50 text-left transition-all flex items-center justify-between hover:border-rose-200">
+                <span class="text-sm font-bold text-stone-800">Hamburger 🍔</span>
+                <span class="check-mark hidden text-rose-600 text-xs font-bold">✓</span>
+              </button>
+
+              <button type="button" onclick="selectFood('Pasta 🍝')" class="food-btn p-3 rounded-2xl border-2 border-stone-200 bg-stone-50/50 text-left transition-all flex items-center justify-between hover:border-rose-200">
+                <span class="text-sm font-bold text-stone-800">Pasta 🍝</span>
+                <span class="check-mark hidden text-rose-600 text-xs font-bold">✓</span>
+              </button>
+
+              <button type="button" onclick="selectFood('Tacos 🌮')" class="food-btn p-3 rounded-2xl border-2 border-stone-200 bg-stone-50/50 text-left transition-all flex items-center justify-between hover:border-rose-200">
+                <span class="text-sm font-bold text-stone-800">Tacos 🌮</span>
+                <span class="check-mark hidden text-rose-600 text-xs font-bold">✓</span>
+              </button>
+
+              <button type="button" onclick="selectFood('Piadina 🌯')" class="food-btn p-3 rounded-2xl border-2 border-stone-200 bg-stone-50/50 text-left transition-all flex items-center justify-between hover:border-rose-200">
+                <span class="text-sm font-bold text-stone-800">Piadina 🌯</span>
+                <span class="check-mark hidden text-rose-600 text-xs font-bold">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-6">
+            <button 
+              onclick="goToStep(5)" 
+              class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold rounded-2xl shadow-lg shadow-rose-600/25 transition-all flex items-center justify-center gap-2">
+              <span>Questo è il mood</span>
+              <span class="text-lg">➔</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- =================== STEP 5: RECAP SIMPATICO =================== -->
+        <section id="step-5" class="step-pane hidden flex-1 flex flex-col justify-between text-center">
+          <div class="my-auto py-2">
+            <div class="w-16 h-16 bg-rose-100 rounded-3xl mx-auto flex items-center justify-center text-3xl mb-4 shadow-sm animate-car-bounce">
+              🚗💨
+            </div>
+            
+            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight leading-snug mb-3">
+              Meno male che non hai detto di no. Fatti trovare pronta, passo a prenderti io!
+            </h2>
+            
+            <div class="bg-rose-50/70 border border-rose-100 rounded-2xl p-4 max-w-sm mx-auto text-left">
+              <p class="text-stone-600 text-xs sm:text-sm leading-relaxed font-medium">
+                <strong class="text-rose-600 font-semibold">P.S.</strong> La gente normale manda un messaggio su WhatsApp. Io ti ho fatto un intero sito web: roba da poco.
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button 
+              onclick="buildReceiptAndProceed()" 
+              class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold rounded-2xl shadow-lg shadow-rose-600/25 transition-all flex items-center justify-center gap-2">
+              <span>Un ultimo piccolo dettaglio</span>
+              <span class="text-lg">➔</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- =================== STEP 6: LA FINTA RICEVUTA =================== -->
+        <section id="step-6" class="step-pane hidden flex-1 flex flex-col justify-between">
+          <div>
+            <!-- Ricevuta grafica scontrino -->
+            <div class="bg-stone-50 border-2 border-dashed border-stone-300 rounded-2xl p-4 sm:p-5 relative shadow-inner">
+              <div class="text-center pb-3 border-b border-dashed border-stone-300">
+                <div class="text-xs uppercase font-bold tracking-widest text-stone-400">Ricevuta Ufficiale</div>
+                <h3 class="font-extrabold text-stone-800 text-sm mt-0.5">Accordo di Appuntamento™</h3>
+                <span class="text-[10px] font-mono text-stone-400">DOC-REF: LOVE-2026-XOXO</span>
+              </div>
+
+              <!-- Dati dinamici scontrino -->
+              <div class="py-3 space-y-2 text-xs font-mono">
+                <div class="flex justify-between items-center">
+                  <span class="text-stone-500">📅 DATA:</span>
+                  <span id="receipt-date" class="font-bold text-stone-800">--</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-stone-500">⏰ ORARIO:</span>
+                  <span id="receipt-time" class="font-bold text-stone-800">--</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-stone-500">🍽️ CIBO:</span>
+                  <span id="receipt-food" class="font-bold text-stone-800">Pizza 🍕</span>
+                </div>
+                
+                <div class="pt-2 border-t border-dashed border-stone-200 flex justify-between items-baseline">
+                  <span class="text-stone-500">IMPORTO:</span>
+                  <div class="text-right">
+                    <span class="line-through text-stone-400 mr-1.5 text-xs">499,00 €</span>
+                    <span class="text-rose-600 font-bold text-sm">0,00 € (GRATIS)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Clausola simpatica -->
+              <div class="mt-2 pt-2.5 border-t border-dashed border-stone-300 text-center">
+                <p class="text-[11px] text-stone-500 italic leading-snug">
+                  "Il conto può essere saldato in risate, ottima compagnia e lasciandomi scegliere la musica in macchina 🎶"
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-5">
+            <button 
+              onclick="finalizeBooking()" 
+              class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold rounded-2xl shadow-lg shadow-rose-600/30 transition-all flex items-center justify-center gap-2 group">
+              <span>Paga & Conferma</span>
+              <span class="group-hover:scale-125 transition-transform">💖</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- =================== STEP 7: SCHERMATA FINALE & WHATSAPP =================== -->
+        <section id="step-7" class="step-pane hidden flex-1 flex flex-col justify-between text-center">
+          <div class="my-auto py-2">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-3xl mb-4 shadow-sm animate-bounce">
+              🎉
+            </div>
+
+            <h2 class="text-2xl font-extrabold text-stone-900 tracking-tight mb-2">
+              Pagamento ricevuto: un adorabile sì!
+            </h2>
+            <p class="text-stone-600 text-sm max-w-xs mx-auto mb-6">
+              L'appuntamento è ufficialmente confermato in agenda. Ora non resta che avvisarmi!
+            </p>
+
+            <!-- Grande Bottone WhatsApp -->
+            <a 
+              id="whatsapp-btn" 
+              href="#" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex w-full items-center justify-center gap-3 py-4 px-6 bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-500/25 transition-all mb-3">
+              <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.35.49 1.199.534 1.286.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.303c-.086.101-.177.211-.076.385.101.173.45 1.743 1.968 2.083.202.045.372.072.501.03.159-.052.463-.538.586-.723.123-.185.246-.155.412-.093.167.062 1.059.499 1.24.588.181.089.303.133.347.208.044.075.044.434-.1 0.839z"/>
+                <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.761.46 3.479 1.334 4.994l-1.418 5.183 5.305-1.391c1.464.798 3.119 1.22 4.769 1.22h.004c5.505 0 9.988-4.478 9.989-9.984 0-2.668-1.039-5.176-2.926-7.063-1.887-1.887-4.396-2.927-7.067-2.927zm0 18.303h-.003c-1.492 0-2.955-.401-4.232-1.159l-.304-.18-3.146.825.839-3.067-.198-.314c-.833-1.325-1.273-2.864-1.273-4.436 0-4.57 3.719-8.289 8.29-8.289 2.214 0 4.296.863 5.862 2.43 1.565 1.566 2.427 3.648 2.427 5.862 0 4.571-3.719 8.288-8.29 8.288z"/>
+              </svg>
+              <span>Invia la conferma su WhatsApp 💌</span>
+            </a>
+
+            <button 
+              onclick="goToStep(1)" 
+              class="text-xs text-stone-400 hover:text-rose-600 transition-colors mt-2 underline">
+              Ricomincia da capo o modifica opzioni
+            </button>
+          </div>
+
+          <div></div>
+        </section>
+
+      </div>
+    </div>
+    
+    <!-- Footer crediti delicati -->
+    <p class="text-center text-xs text-stone-400 mt-4 tracking-wide">
+      Fatto a mano con amore & cura dei dettagli ✨
+    </p>
+  </main>
+
+  <script>
+    // Stato dell'applicazione
+    const appState = {
+      currentStep: 1,
+      totalSteps: 7,
+      date: '',
+      time: '20:30',
+      food: 'Pizza 🍕',
+      phone: '393426629732'
+    };
+
+    // Inizializzazione della data minima (oggi)
+    window.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('date-input');
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      
+      const minDate = `${yyyy}-${mm}-${dd}`;
+      dateInput.min = minDate;
+      
+      // Data predefinita (domani sera)
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+      dateInput.value = tomorrowStr;
+      appState.date = tomorrowStr;
+
+      // Inizializzazione pulsante timido NO
+      initTimidNoButton();
+    });
+
+    // Funzione navigazione tra gli step
+    function goToStep(stepNumber) {
+      if (stepNumber < 1 || stepNumber > appState.totalSteps) return;
+
+      // Nascondi tutti i pannelli
+      document.querySelectorAll('.step-pane').forEach(el => {
+        el.classList.add('hidden');
+      });
+
+      // Mostra il pannello corrente
+      const targetPane = document.getElementById(`step-${stepNumber}`);
+      if (targetPane) {
+        targetPane.classList.remove('hidden');
+      }
+
+      appState.currentStep = stepNumber;
+
+      // Aggiorna header contatore e barra di avanzamento
+      const counter = document.getElementById('step-counter');
+      const progressBar = document.getElementById('step-progress-bar');
+      
+      counter.textContent = `Passo ${stepNumber} / ${appState.totalSteps}`;
+      const percentage = (stepNumber / appState.totalSteps) * 100;
+      progressBar.style.width = `${percentage}%`;
+    }
+
+    // Logica Tasto 'NO' Fuggitivo (Timid Button)
+    function initTimidNoButton() {
+      const btnNo = document.getElementById('btn-no');
+      const container = document.getElementById('playground-area');
+
+      if (!btnNo || !container) return;
+
+      const moveButtonAway = (e) => {
+        // Blocca eventuale touch primario per evitare il click
+        if (e && e.type === 'touchstart') {
+          e.preventDefault();
+        }
+
+        const containerRect = container.getBoundingClientRect();
+        const btnRect = btnNo.getBoundingClientRect();
+
+        // Margini di sicurezza interni
+        const padding = 12;
+        const maxLeft = containerRect.width - btnRect.width - padding;
+        const maxTop = containerRect.height - btnRect.height - padding;
+
+        // Calcola una nuova posizione casuale
+        let randomLeft = Math.floor(Math.random() * maxLeft) + padding;
+        let randomTop = Math.floor(Math.random() * maxTop) + padding;
+
+        btnNo.style.position = 'absolute';
+        btnNo.style.left = `${randomLeft}px`;
+        btnNo.style.top = `${randomTop}px`;
+        btnNo.style.right = 'auto';
+
+        // Piccolo feedback visivo
+        btnNo.classList.add('scale-90');
+        setTimeout(() => btnNo.classList.remove('scale-90'), 150);
+      };
+
+      // Eventi desktop e mobile
+      btnNo.addEventListener('mouseenter', moveButtonAway);
+      btnNo.addEventListener('touchstart', moveButtonAway, { passive: false });
+      btnNo.addEventListener('pointerover', moveButtonAway);
+      btnNo.addEventListener('click', (e) => {
+        e.preventDefault();
+        moveButtonAway(e);
+      });
+    }
+
+    // Validazione e avanzamento allo Step 4
+    function validateAndGoToStep(targetStep) {
+      const dateInput = document.getElementById('date-input');
+      const timeSelect = document.getElementById('time-select');
+      const warning = document.getElementById('step-3-warning');
+
+      if (!dateInput.value) {
+        warning.classList.remove('hidden');
+        return;
+      }
+
+      warning.classList.add('hidden');
+      appState.date = dateInput.value;
+      appState.time = timeSelect.value;
+
+      goToStep(targetStep);
+    }
+
+    // Selezione Cibo (Step 4)
+    function selectFood(foodName) {
+      appState.food = foodName;
+      
+      const buttons = document.querySelectorAll('.food-btn');
+      buttons.forEach(btn => {
+        const isMatch = btn.textContent.includes(foodName.split(' ')[0]);
+        const check = btn.querySelector('.check-mark');
+
+        if (isMatch) {
+          btn.classList.add('border-rose-500', 'bg-rose-50/70');
+          btn.classList.remove('border-stone-200', 'bg-stone-50/50');
+          if (check) check.classList.remove('hidden');
+        } else {
+          btn.classList.remove('border-rose-500', 'bg-rose-50/70');
+          btn.classList.add('border-stone-200', 'bg-stone-50/50');
+          if (check) check.classList.add('hidden');
+        }
+      });
+    }
+
+    // Formattazione data italiana amichevole
+    function formatItalianDate(dateStr) {
+      if (!dateStr) return 'Da concordare';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+
+      const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+      return new Intl.DateTimeFormat('it-IT', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }).format(dateObj);
+    }
+
+    // Costruzione scontrino e passaggio a Step 6
+    function buildReceiptAndProceed() {
+      const formattedDate = formatItalianDate(appState.date);
+      
+      document.getElementById('receipt-date').textContent = formattedDate;
+      document.getElementById('receipt-time').textContent = appState.time;
+      document.getElementById('receipt-food').textContent = appState.food;
+
+      goToStep(6);
+    }
+
+    // Finalizzazione allo Step 7 con coriandoli e link WhatsApp
+    function finalizeBooking() {
+      goToStep(7);
+
+      // Spara coriandoli celebrativi
+      launchCelebrationConfetti();
+
+      // Generazione testo WhatsApp con encodeURIComponent
+      const dateFormatted = formatItalianDate(appState.date);
+      const textMessage = `Ufficiale! Ho firmato il Date Agreement™ ✍️💖\n📅 Data: ${dateFormatted}\n⏰ Ora: ${appState.time}\n🍽️ Menu: ${appState.food}\nFatti trovare pronto!`;
+      
+      const encodedMsg = encodeURIComponent(textMessage);
+      const waUrl = `https://wa.me/${appState.phone}?text=${encodedMsg}`;
+      
+      const waBtn = document.getElementById('whatsapp-btn');
+      if (waBtn) {
+        waBtn.href = waUrl;
+      }
+    }
+
+    // Esplosione coriandoli su schermo intero
+    function launchCelebrationConfetti() {
+      if (typeof confetti !== 'function') return;
+
+      const count = 200;
+      const defaults = {
+        origin: { y: 0.7 }
+      };
+
+      function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+          particleCount: Math.floor(count * particleRatio)
+        }));
+      }
+
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
+        colors: ['#e11d48', '#fda4af', '#f43f5e']
+      });
+      fire(0.2, {
+        spread: 60,
+        colors: ['#ffe4e6', '#fb7185', '#be123c']
+      });
+      fire(0.35, {
+        spread: 100,
+        decay: 0.91,
+        scalar: 0.8
+      });
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 25,
+        decay: 0.92,
+        scalar: 1.2
+      });
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 45,
+      });
+    }
+  </script>
+</body>
+</html>
